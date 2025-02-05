@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: registry-1.docker.io/bitnamicharts
+    chart: postgresql
+    targetRevision: 16.4.5
+    helm:
+      values: |
+        global:
+          postgresql:
+            auth:
+              username: service_user
+              database: auth
+              existingSecret: postgres-passwords  # Reference the existing secret
+              secretKeys:
+                adminPasswordKey: adminPassword
+                userPasswordKey: userPassword
+        primary:
+          persistence:
+            enabled: true
+            size: 10Gi
+          # Health check configuration
+          livenessProbe:
+            enabled: true
+            initialDelaySeconds: 60  
+            periodSeconds: 30    
+            timeoutSeconds: 5       
+            failureThreshold: 3   
+            successThreshold: 1    
+          readinessProbe:
+            enabled: true
+            initialDelaySeconds: 10  
+            periodSeconds: 5      
+            timeoutSeconds: 3       
+            failureThreshold: 3     
+            successThreshold: 1  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      allowEmpty: false
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - Validate=true
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
