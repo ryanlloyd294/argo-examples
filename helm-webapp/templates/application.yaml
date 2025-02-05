@@ -14,12 +14,10 @@ spec:
         global:
           postgresql:
             auth:
-              username: service_user
-              database: auth
-              existingSecret: postgres-passwords  # Reference the existing secret
-              secretKeys:
-                adminPasswordKey: adminPassword
-                userPasswordKey: userPassword
+              user: "user"
+              postgresPassword: "newPostgresPassword123"
+              password: "newUserPassword123"
+              replicationPassword: "newReplicationPassword123"
         primary:
           persistence:
             enabled: true
